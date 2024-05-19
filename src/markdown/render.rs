@@ -66,6 +66,12 @@ pub fn from_tree(tree: &Pairs<'_, Rule>, mut original_in: String) -> String {
     out = regex_replace(&out, "(&!)(.*?);", "&$2;");
     out = out.replace("&quot;", "\"");
 
+    // css ">"
+    out = out.replace("&gt; \\.", "> .");
+    out = out.replace("&gt; #", "> #");
+    out = out.replace("(&gt;", "(>");
+    out = out.replace(" &gt; ", " > ");
+
     // ...
     for block in tree.clone().into_iter() {
         let btype = block.as_rule();

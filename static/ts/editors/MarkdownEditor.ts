@@ -462,6 +462,106 @@ export default function CreateEditor(ElementID: string, content: string) {
     // set value of contentInput if we have window.sessionStorage.doc
     const doc = window.localStorage.getItem("doc");
     if (doc) (window as any).EditorContent = doc;
+
+    // handle submit
+    const custom_url = document.getElementById("editing")!.innerText;
+
+    const submit_form: HTMLFormElement = document.getElementById(
+        "save-changes"
+    ) as HTMLFormElement;
+
+    if (!custom_url) {
+        // create paste
+        submit_form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const res = await fetch("/api/new", {
+                method: "POST",
+                body: JSON.stringify({
+                    custom_url: submit_form.custom_url.value,
+                    edit_password: submit_form.edit_password.value,
+                    group_name: submit_form.group_name.value,
+                    content: (window as any).EditorContent,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const json = await res.json();
+
+            if (json.success === false) {
+                return alert(json.message);
+            } else {
+                window.location.href = `/${json.payload.custom_url}?SECRET=${json.message}`; // message holds the unhashed edit password
+            }
+        });
+    } else {
+        // edit paste
+        submit_form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const res = await fetch("/api/edit", {
+                method: "POST",
+                body: JSON.stringify({
+                    custom_url,
+                    edit_password: submit_form.edit_password.value,
+                    content: (window as any).EditorContent,
+                    new_custom_url:
+                        submit_form.new_custom_url.value || undefined,
+                    new_edit_password:
+                        submit_form.new_edit_password.value || undefined,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const json = await res.json();
+
+            if (json.success === false) {
+                return alert(json.message);
+            } else {
+                window.location.href = `/${json.payload}`;
+            }
+        });
+
+        // handle delete
+        const delete_btn: HTMLAnchorElement = document.getElementById(
+            "delete-btn"
+        ) as HTMLAnchorElement;
+
+        delete_btn.addEventListener("click", async () => {
+            const _confirm = confirm(
+                "Are you sure you would like to do this? This URL will be available for anybody to claim."
+            );
+
+            if (!_confirm) return;
+
+            const edit_password = prompt(
+                "Please enter this paste's edit password:"
+            );
+
+            if (!edit_password) return;
+
+            const res = await fetch("/api/delete", {
+                method: "POST",
+                body: JSON.stringify({
+                    custom_url,
+                    edit_password: edit_password,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const json = await res.json();
+
+            if (json.success === false) {
+                return alert(json.message);
+            } else {
+                window.location.href = "/";
+            }
+        });
+    }
 }
 
 // handle tabs
@@ -565,27 +665,6 @@ if (CustomURLInput)
         }, 500);
     });
 
-// details auto focus
-for (let element of document.querySelectorAll(
-    "details"
-) as any as HTMLDetailsElement[]) {
-    // check if element has an input
-    const input = element.querySelector("input");
-    if (!input) continue;
-
-    // add event listener
-    element.querySelector("summary")!.addEventListener("click", () => {
-        if (element.getAttribute("open") !== null) return; // element must be open,
-        //                                                    should not have attribute
-        //                                                    already when event is fired
-
-        // auto focus input
-        setTimeout(() => {
-            input.focus();
-        }, 0);
-    });
-}
-
 // clear stored content only if ref isn't the homepage (meaning the paste was created properly)
 if (
     !document.referrer.endsWith(`${window.location.host}/`) && // homepage
@@ -616,103 +695,4 @@ export async function ParseMarkdown(content: string): Promise<string> {
             },
         })
     ).text();
-}
-
-// handle submit
-const custom_url = document.getElementById("editing")!.innerText;
-
-const submit_form: HTMLFormElement = document.getElementById(
-    "save-changes"
-) as HTMLFormElement;
-
-if (!custom_url) {
-    // create paste
-    submit_form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const res = await fetch("/api/new", {
-            method: "POST",
-            body: JSON.stringify({
-                custom_url: submit_form.custom_url.value,
-                edit_password: submit_form.edit_password.value,
-                group_name: submit_form.group_name.value,
-                content: (window as any).EditorContent,
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        const json = await res.json();
-
-        if (json.success === false) {
-            return alert(json.message);
-        } else {
-            window.location.href = `/${json.payload.custom_url}?SECRET=${json.message}`; // message holds the unhashed edit password
-        }
-    });
-} else {
-    // edit paste
-    submit_form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const res = await fetch("/api/edit", {
-            method: "POST",
-            body: JSON.stringify({
-                custom_url,
-                edit_password: submit_form.edit_password.value,
-                content: (window as any).EditorContent,
-                new_custom_url: submit_form.new_custom_url.value || undefined,
-                new_edit_password:
-                    submit_form.new_edit_password.value || undefined,
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        const json = await res.json();
-
-        if (json.success === false) {
-            return alert(json.message);
-        } else {
-            window.location.href = `/${json.payload}`;
-        }
-    });
-
-    // handle delete
-    const delete_btn: HTMLAnchorElement = document.getElementById(
-        "delete-btn"
-    ) as HTMLAnchorElement;
-
-    delete_btn.addEventListener("click", async () => {
-        const _confirm = confirm(
-            "Are you sure you would like to do this? This URL will be available for anybody to claim."
-        );
-
-        if (!_confirm) return;
-
-        const edit_password = prompt(
-            "Please enter this paste's edit password:"
-        );
-
-        if (!edit_password) return;
-
-        const res = await fetch("/api/delete", {
-            method: "POST",
-            body: JSON.stringify({
-                custom_url,
-                edit_password: edit_password,
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        const json = await res.json();
-
-        if (json.success === false) {
-            return alert(json.message);
-        } else {
-            window.location.href = "/";
-        }
-    });
 }
