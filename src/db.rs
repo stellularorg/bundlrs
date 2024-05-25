@@ -780,8 +780,8 @@ impl Database {
             };
         }
 
-        // project cannot have names we may need
-        if ["dashboard", "api"].contains(&p.custom_url.as_str()) {
+        // paste cannot have names we may need
+        if ["dashboard", "api", "public", "static"].contains(&p.custom_url.as_str()) {
             return DefaultReturn {
                 success: false,
                 message: String::from("Custom URL is invalid"),
