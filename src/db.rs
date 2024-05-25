@@ -121,26 +121,6 @@ pub struct GroupMetadata {
 }
 
 #[derive(Default, Clone, Serialize, Deserialize, PartialEq)]
-// Takes the place of "about" in BoardMetadata, identifies a board as a user mail stream
-pub struct UserMailStreamIdentifier {
-    pub _is_user_mail_stream: bool, // always going to be true ... cannot be edited into board about ANYWHERE
-    pub user1: String,              // username of first user
-    pub user2: String,              // username of second user
-}
-
-#[derive(Default, Clone, Serialize, Deserialize, PartialEq)]
-pub struct BoardMetadata {
-    pub owner: String,                      // username of owner
-    pub is_private: String, // if the homepage of the board is shown to other users (not owner)
-    pub allow_anonymous: Option<String>, // if anonymous users can post
-    pub allow_open_posting: Option<String>, // if all users can post on the board (not just owner)
-    pub topic_required: Option<String>, // if posts are required to include a topic value
-    pub about: Option<String>, // welcome message
-    pub tags: Option<String>, // SPACE separated list of tags that identify the board for searches
-                            // TODO: we could likely export a list of "valid" tags at some point in the future
-}
-
-#[derive(Default, Clone, Serialize, Deserialize, PartialEq)]
 pub struct BoardPostLog {
     pub author: String, // username of owner
     pub content: String,
@@ -152,12 +132,6 @@ pub struct BoardPostLog {
     pub pinned: Option<bool>,  // pin the post to the top of the board feed
     pub replies: Option<usize>, // not really managed in the log, just used to show the number of replies this post has
     pub tags: Option<String>,   // same as board tags, just for posts specifically
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
-pub struct BoardIdentifier {
-    pub name: String,
-    pub tags: String,
 }
 
 pub fn derserialize_post(post: &String) -> BoardPostLog {
@@ -1555,78 +1529,6 @@ impl Database {
     // boards
 
     // GET
-    /// Get all [`UserMailStreamIdentifier`] boards by a single participating user
-    ///
-    /// # Arguments:
-    /// * `user` - username of the user
-    /// * `offset` - optional value representing the SQL fetch offset
-    pub async fn get_user_mail_streams(
-        &self,
-        user: String,
-        offset: Option<i32>,
-    ) -> DefaultReturn<Vec<BoardIdentifier>> {
-        let query: &str = if (self.base.db._type == "sqlite") | (self.base.db._type == "mysql") {
-            "SELECT * FROM \"Boards\" WHERE \"metadata\" LIKE ? OR \"metadata\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET ?"
-        } else {
-            "SELECT * FROM \"Boards\" WHERE \"metadata\" LIKE $1 OR \"metadata\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET $3"
-        };
-
-        let c = &self.base.db.client;
-        let res = sqlquery(query)
-            .bind::<String>(if &self.base.db._type == "mysql" {
-                format!("%\\\\\"user1\\\\\":\\\\\"{}\\\\\"%", user)
-            } else {
-                format!("%\\\"user1\\\":\\\"{}\\\"%", user)
-            })
-            .bind::<String>(if &self.base.db._type == "mysql" {
-                format!("%\\\\\"user2\\\\\":\\\\\"{}\\\\\"%", user)
-            } else {
-                format!("%\\\"user2\\\":\\\"{}\\\"%", user)
-            })
-            .bind(if offset.is_some() { offset.unwrap() } else { 0 })
-            .fetch_all(c)
-            .await;
-
-        if res.is_err() {
-            return DefaultReturn {
-                success: false,
-                message: String::from("Boards do not exist"),
-                payload: Vec::new(),
-            };
-        }
-
-        // ...
-        let rows = res.unwrap();
-        let mut output: Vec<BoardIdentifier> = Vec::new();
-
-        for row in rows {
-            let row = self.base.textify_row(row).data;
-
-            let metadata =
-                serde_json::from_str::<BoardMetadata>(row.get("metadata").unwrap()).unwrap();
-
-            let mailstream =
-                serde_json::from_str::<UserMailStreamIdentifier>(&metadata.about.unwrap()).unwrap();
-
-            output.push(BoardIdentifier {
-                name: row.get("name").unwrap().to_string(),
-                // we're going to use tags to store the name of the other user
-                tags: if user == mailstream.user1 {
-                    mailstream.user2
-                } else {
-                    mailstream.user1
-                },
-            });
-        }
-
-        // return
-        return DefaultReturn {
-            success: true,
-            message: String::from("Boards exists"),
-            payload: output,
-        };
-    }
-
     /// Get most recent posts from all boards
     ///
     /// # Arguments:

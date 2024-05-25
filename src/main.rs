@@ -124,7 +124,6 @@ async fn main() -> std::io::Result<()> {
             .service(crate::api::auth::logout)
             // GET dashboard
             .service(crate::pages::home::dashboard_request)
-            .service(crate::pages::home::inbox_request)
             .service(crate::pages::settings::user_settings_request)
             .service(crate::pages::settings::paste_settings_request)
             .service(crate::pages::paste_view::dashboard_request)
