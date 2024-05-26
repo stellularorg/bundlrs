@@ -107,7 +107,7 @@ pub async fn paste_view_request(
     }
 
     let unwrap = paste.payload.as_ref().unwrap();
-
+   
     // verify auth status
     let (set_cookie, _, token_user) = base::check_auth_status(req.clone(), data.clone()).await;
 

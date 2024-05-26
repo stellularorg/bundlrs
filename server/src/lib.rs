@@ -12,4 +12,3 @@ pub mod db;
 pub mod markdown;
 pub mod pages;
 pub mod ssm;
-mod utility;

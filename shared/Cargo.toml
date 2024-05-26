@@ -1,0 +1,12 @@
+[package]
+name = "shared"
+description = "Bundlrs Shared Resources"
+authors = ["hkau"]
+license = "MIT"
+
+version = "0.1.1"
+edition = "2021"
+
+[dependencies]
+comrak = "0.24.1"
+regex = "1.10.4"

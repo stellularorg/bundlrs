@@ -1,7 +1,8 @@
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 
 use crate::db::{self, DefaultReturn, FullPaste, PasteMetadata};
-use crate::{markdown, ssm, utility};
+use crate::{markdown, ssm};
+use dorsal::utility;
 
 #[derive(Default, PartialEq, serde::Deserialize)]
 pub struct OffsetQueryProps {

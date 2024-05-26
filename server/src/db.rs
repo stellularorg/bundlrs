@@ -2,7 +2,7 @@
 //! Database handler for all database types
 use std::collections::HashMap;
 
-use crate::utility;
+use dorsal::utility;
 use serde::{Deserialize, Serialize};
 
 use dorsal::query as sqlquery;
@@ -316,7 +316,7 @@ impl Database {
                     embed_color: Option::None,
                     view_password: Option::Some(format!(
                         "LOCKED(USER_BANNED)-{}",
-                        crate::utility::random_id()
+                        utility::random_id()
                     )),
                     page_template: Option::None,
                 })
