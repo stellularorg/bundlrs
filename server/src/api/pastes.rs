@@ -321,6 +321,7 @@ pub async fn metadata_request(
             } else {
                 Option::None
             },
+            false,
         )
         .await;
 
@@ -485,4 +486,118 @@ pub async fn read_atomic_request(req: HttpRequest, data: web::Data<db::AppData>)
     return HttpResponse::Ok()
         .append_header(("Content-Type", "text/plain"))
         .body(existing.unwrap().content.clone());
+}
+
+#[post("/api/claim/{custom_url:.*}")]
+/// Attempt to claim an existing paste
+pub async fn claim_request(req: HttpRequest, data: web::Data<db::AppData>) -> impl Responder {
+    let custom_url: &str = req.match_info().get("custom_url").unwrap();
+
+    // get token user
+    let token_cookie = req.cookie("__Secure-Token");
+    let token_user = if token_cookie.is_some() {
+        Option::Some(
+            data.db
+                .get_user_by_unhashed(token_cookie.as_ref().unwrap().value().to_string()) // if the user is returned, that means the ID is valid
+                .await,
+        )
+    } else {
+        Option::None
+    };
+
+    if token_user.is_some() {
+        // make sure user exists
+        if token_user.as_ref().unwrap().success == false {
+            return HttpResponse::NotFound().body("Invalid token");
+        }
+    }
+
+    if token_user.is_none() {
+        return HttpResponse::NotAcceptable().body("You are not allowed to do this.");
+    }
+
+    // get paste
+    let res = data.db.get_paste_by_url(custom_url.to_string()).await;
+
+    if res.success == false {
+        return HttpResponse::NotAcceptable()
+            .append_header(("Content-Type", "application/json"))
+            .body(serde_json::to_string(&res).unwrap());
+    }
+
+    let paste_info = res.payload.as_ref().unwrap();
+    let paste = &paste_info.paste;
+
+    // check requirements
+    // (owner permission)
+    if paste_info.user.is_some() {
+        let user = paste_info.user.as_ref().unwrap();
+
+        // TODO: &String is awful here
+        if user.level.permissions.contains(&"ManagePastes".to_string()) {
+            return HttpResponse::NotAcceptable()
+                .append_header(("Content-Type", "application/json"))
+                .body(
+                    serde_json::to_string::<DefaultReturn<bool>>(&DefaultReturn {
+                        success: false,
+                        message: "Paste owner has \"ManagePastes\" permission.".to_string(),
+                        payload: true,
+                    })
+                    .unwrap(),
+                );
+        }
+    }
+
+    // (views)
+    if paste.views > 1_500 {
+        return HttpResponse::NotAcceptable()
+            .append_header(("Content-Type", "application/json"))
+            .body(
+                serde_json::to_string::<DefaultReturn<bool>>(&DefaultReturn {
+                    success: false,
+                    message: "Paste is too popular.".to_string(),
+                    payload: true,
+                })
+                .unwrap(),
+            );
+    }
+
+    // (edited)
+    let right_now = utility::unix_epoch_timestamp();
+    let max_diff = 15778800000; // 6 months
+
+    if (right_now - paste.edit_date) < max_diff {
+        return HttpResponse::NotAcceptable()
+            .append_header(("Content-Type", "application/json"))
+            .body(
+                serde_json::to_string::<DefaultReturn<bool>>(&DefaultReturn {
+                    success: false,
+                    message: "Paste was edited too recently.".to_string(),
+                    payload: true,
+                })
+                .unwrap(),
+            );
+    }
+
+    // update
+    let me = token_user.unwrap().payload.unwrap();
+
+    let mut paste = paste.clone();
+    paste.metadata.owner = me.user.username;
+
+    let res = data
+        .db
+        .edit_paste_metadata_by_url(
+            custom_url.to_string(),
+            paste.metadata,
+            String::new(),
+            Option::None,
+            true,
+        )
+        .await;
+
+    // return
+    return HttpResponse::Ok()
+        .append_header(("Content-Type", "application/json"))
+        .body(serde_json::to_string(&res).unwrap());
 }

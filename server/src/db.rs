@@ -1104,6 +1104,7 @@ impl Database {
         metadata: PasteMetadata,
         edit_password: String,
         edit_as: Option<String>, // username of account that is editing this paste
+        skip_edit_check: bool
     ) -> DefaultReturn<Option<String>> {
         url = idna::punycode::encode_str(&url).unwrap();
 
@@ -1140,7 +1141,7 @@ impl Database {
         let paste = &existing.payload.clone().unwrap().paste;
 
         // ...skip password check IF the user is the paste owner!
-        let skip_password_check = if edit_as.is_some() {
+        let skip_password_check = (skip_edit_check == true) | if edit_as.is_some() {
             let edit_as = edit_as.as_ref().unwrap();
             let in_permissions_list = existing_metadata.permissions_list.get(edit_as);
         
