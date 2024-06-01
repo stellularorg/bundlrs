@@ -109,7 +109,17 @@ async fn main() -> std::io::Result<()> {
                     .redirect_to_slash_directory(),
             )
             // docs
-            .service(fs::Files::new("/api/docs", "./target/doc").show_files_listing())
+            .service(
+                fs::Files::new(
+                    "/api/docs",
+                    if std::fs::read_dir("./target/doc").is_ok() {
+                        "./target/doc"
+                    } else {
+                        "./public"
+                    },
+                )
+                .show_files_listing(),
+            )
             // POST api
             .service(crate::api::auth::ban_request)
             // POST api::pastes
