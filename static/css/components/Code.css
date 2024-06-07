@@ -1,0 +1,199 @@
+/* codemirror styles */
+.cm-cursor {
+    border-color: currentColor !important;
+    border-left: 1.2px solid currentColor !important;
+}
+
+.cm-selectionBackground {
+    background: var(--red1) !important;
+}
+
+.cm-editor {
+    height: 100%;
+}
+
+.cm-editor.cm-focused {
+    outline: none;
+}
+
+.cm-scroller {
+    overflow: auto;
+}
+
+.cm-tooltip {
+    background-color: var(--background-surface) !important;
+    border-color: var(--background-surface2) !important;
+    color: var(--text-color) !important;
+}
+
+.cm-tooltip.cm-completionInfo {
+    margin-left: var(--u-04);
+}
+
+.cm-tooltip-autocomplete li {
+    padding: var(--u-02) var(--u-04) !important;
+    transition: all 0.1s;
+    color: var(--text-color) !important;
+    opacity: 75%;
+}
+
+.cm-tooltip-autocomplete li[aria-selected="true"] {
+    background: var(--background-surface2a) !important;
+    color: var(--red3) !important;
+    opacity: 100%;
+}
+
+.cm-gutters {
+    background-color: var(--background-surface1) !important;
+    border-color: var(--background-surface2a) !important;
+}
+
+.cm-line {
+    padding: 1px 2px 1px 6px !important;
+}
+
+.cm-activeLine {
+    box-shadow: inset 0 0 0 1px var(--background-surface2a) !important;
+    background: inherit !important;
+}
+
+.cm-gutterElement {
+    font-family: monospace;
+    opacity: 75%;
+}
+
+.cm-gutterElement.cm-activeLineGutter {
+    background-color: inherit !important;
+    opacity: 100%;
+}
+
+/* highlight.js styles */
+.hljs-comment {
+    color: var(--green);
+    font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+    color: var(--red3);
+}
+
+.hljs-variable,
+.hljs-title,
+.hljs-attribute {
+    color: var(--blue2);
+}
+
+.hljs-property,
+.hljs-attr {
+    color: var(--red);
+}
+
+.hljs-string {
+    color: var(--green);
+}
+
+/* code block */
+code,
+.code {
+    padding: 0.2rem;
+    background: var(--red2);
+    color: var(--red3);
+    font-family: monospace;
+    font-size: 13.5px;
+    line-height: 1rem;
+    max-width: 100%;
+}
+
+code *,
+.code * {
+    font-family: inherit;
+}
+
+pre code,
+pre .code {
+    white-space: pre;
+    color: currentColor;
+    padding: 0;
+    background: inherit;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: auto;
+    padding: 1px;
+}
+
+pre code p,
+pre .code p {
+    display: none;
+}
+
+pre,
+code,
+.code,
+pre code span {
+    font-family: monospace;
+}
+
+pre {
+    gap: var(--u-04);
+    white-space: pre;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    height: max-content;
+    background: var(--background-surface);
+    padding: var(--u-04) 0;
+}
+
+pre .line-numbers {
+    text-align: right;
+    color: var(--text-color-faded);
+    user-select: none;
+    border-right: solid 1px var(--background-surface2a);
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    min-width: 30px;
+    overflow: hidden;
+}
+
+pre .line-numbers .line-number {
+    padding: 0 var(--u-04);
+    color: var(--text-color-faded);
+    display: block;
+}
+
+pre .line-numbers .line-number:hover {
+    text-decoration: none;
+    background: var(--background-surface2a);
+    color: var(--text-color);
+}
+
+pre .copy-button {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+pre:hover .copy-button {
+    opacity: 1;
+}
+
+pre code .added,
+pre code .removed,
+pre code .marker {
+    width: 100%;
+    display: block;
+}
+
+pre code .added {
+    background: var(--green1);
+}
+
+pre code .removed {
+    background: var(--red1);
+}
+
+pre code .marker {
+    background: var(--background-surface1);
+}

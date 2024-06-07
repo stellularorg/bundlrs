@@ -1,0 +1,126 @@
+/* animations */
+@keyframes FadeIn {
+    0% {
+        opacity: 0%;
+    }
+
+    25% {
+        opacity: 25%;
+    }
+
+    50% {
+        opacity: 50%;
+    }
+
+    75% {
+        opacity: 75%;
+    }
+
+    100% {
+        opacity: 100%;
+    }
+}
+
+@keyframes FadeOut {
+    from {
+        opacity: 100% !important;
+    }
+
+    to {
+        opacity: 0% !important;
+    }
+}
+
+@keyframes FadeOut {
+    0% {
+        opacity: 100%;
+    }
+
+    25% {
+        opacity: 75%;
+    }
+
+    50% {
+        opacity: 50%;
+    }
+
+    75% {
+        opacity: 25%;
+    }
+
+    100% {
+        opacity: 0%;
+    }
+}
+
+@keyframes Float {
+    from {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+
+    to {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes Grow {
+    from {
+        transform: scale(0.95);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes GrowShrink {
+    from {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes Blink {
+    0% {
+        opacity: 100%;
+    }
+
+    50% {
+        opacity: 0%;
+    }
+
+    100% {
+        opacity: 100%;
+    }
+}
+
+@keyframes SlideInFromLeft {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes SlideInFromTop {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
