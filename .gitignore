@@ -1,11 +1,11 @@
 target/
-server/static/css
+static/css
 Cargo.lock
 *.db
 
 # js
 node_modules/
-server/static/js
+static/js
 bun.lockb
 
 # env
