@@ -9,14 +9,14 @@ use crate::db::{self, AppData, FullPaste, PasteMetadata, UserMetadata};
 
 #[derive(Template)]
 #[template(path = "paste/password_ask.html")]
-struct PasswordAskTemplate {
-    custom_url: String,
+pub(super) struct PasswordAskTemplate {
+    pub(super) custom_url: String,
     // required fields (super::base)
-    info: String,
-    auth_state: bool,
-    guppy: String,
-    site_name: String,
-    body_embed: String,
+    pub(super) info: String,
+    pub(super) auth_state: bool,
+    pub(super) guppy: String,
+    pub(super) site_name: String,
+    pub(super) body_embed: String,
 }
 
 #[derive(Template)]
@@ -107,7 +107,7 @@ pub async fn paste_view_request(
     }
 
     let unwrap = paste.payload.as_ref().unwrap();
-   
+
     // verify auth status
     let (set_cookie, _, token_user) = base::check_auth_status(req.clone(), data.clone()).await;
 
@@ -115,46 +115,43 @@ pub async fn paste_view_request(
     let metadata = &unwrap.paste.metadata;
 
     // handle view password
-    if metadata.view_password.is_some()
-        && info.view.is_none()
-        && metadata.view_password.as_ref().unwrap() != "off"
-    {
-        if metadata
-            .view_password
-            .as_ref()
-            .unwrap()
-            .starts_with("LOCKED(USER_BANNED)-")
-        {
-            return HttpResponse::NotFound().body("Failed to view paste (LOCKED: OWNER BANNED)");
-        }
-
-        let base = base::get_base_values(token_user.is_some());
-        return HttpResponse::Ok()
-            .append_header(("Set-Cookie", ""))
-            .append_header(("Content-Type", "text/html"))
-            .body(
-                PasswordAskTemplate {
-                    custom_url: unwrap.clone().paste.custom_url,
-                    // required fields
-                    info: base.info,
-                    auth_state: base.auth_state,
-                    guppy: base.guppy,
-                    site_name: base.site_name,
-                    body_embed: base.body_embed,
+    match metadata.view_password {
+        Some(ref view_password) => {
+            // show password prompt
+            if info.view.is_none() && view_password != "off" {
+                if view_password.starts_with("LOCKED(USER_BANNED)-") {
+                    return HttpResponse::NotFound()
+                        .body("Failed to view paste (LOCKED: OWNER BANNED)");
                 }
-                .render()
-                .unwrap(),
-            );
-    }
 
-    // (check password)
-    if info.view.is_some()
-        && metadata.view_password.is_some()
-        && metadata.view_password.as_ref().unwrap() != "off"
-        && &info.view.as_ref().unwrap() != &metadata.view_password.as_ref().unwrap()
-    {
-        return HttpResponse::NotFound()
-            .body("You do not have permission to view this paste's contents.");
+                let base = base::get_base_values(token_user.is_some());
+                return HttpResponse::Ok()
+                    .append_header(("Set-Cookie", ""))
+                    .append_header(("Content-Type", "text/html"))
+                    .body(
+                        PasswordAskTemplate {
+                            custom_url: unwrap.clone().paste.custom_url,
+                            // required fields
+                            info: base.info,
+                            auth_state: base.auth_state,
+                            guppy: base.guppy,
+                            // deducktive: base.deducktive,
+                            site_name: base.site_name,
+                            body_embed: base.body_embed,
+                        }
+                        .render()
+                        .unwrap(),
+                    );
+            }
+            // check given password
+            else if info.view.is_some()
+                && (&info.view.as_ref().unwrap() != &metadata.view_password.as_ref().unwrap())
+            {
+                return HttpResponse::NotFound()
+                    .body("You do not have permission to view this paste's contents.");
+            }
+        }
+        None => (),
     }
 
     // handle atomic pastes (just return index.html)

@@ -6,7 +6,7 @@ Bundlrs is a *super* lightweight and [anonymous](#user-accounts) social markdown
 
 For migration from Bundles, please see [#3](https://code.stellular.org/stellular/bundlrs/issues/3).
 
-> Also see [Puffer](https://code.stellular.org/stellular/puffer) and [Guppy](https://code.stellular.org/stellular/guppy)! (required)
+> Also [Guppy](https://code.stellular.org/stellular/guppy) for user authentication.
 
 ## Install
 
@@ -66,12 +66,6 @@ Environment variables:
 - [Templates Info Page](https://stellular.net/pub/templates)
 - [SSM Info Page](https://stellular.net/pub/ssm)
 - [API Docs](https://stellular.net/api/docs/bundlrs/index.html)
-
-## Boards
-
-Boards are simple forum-like rooms that can be created by users. Boards can be made private by changing `is_private` to `yes` in their configuration page; however this will not stop [users](#user-accounts) with the `Staff` role from viewing and posting on the board.
-
-Boards can be given tags in their configuration. All tags must start with `+` and must be space separated.
 
 ## User Accounts
 
