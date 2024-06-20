@@ -562,6 +562,22 @@ pub async fn claim_request(req: HttpRequest, data: web::Data<db::AppData>) -> im
             );
     }
 
+    // (words)
+    let words = paste.content.split(" ");
+
+    if words.collect::<Vec<&str>>().len() > 250 {
+        return HttpResponse::NotAcceptable()
+            .append_header(("Content-Type", "application/json"))
+            .body(
+                serde_json::to_string::<DefaultReturn<bool>>(&DefaultReturn {
+                    success: false,
+                    message: String::from("Paste content has too many words."),
+                    payload: false,
+                })
+                .unwrap(),
+            );
+    }
+
     // (edited)
     let right_now = utility::unix_epoch_timestamp();
     let max_diff = 15778800000; // 6 months
